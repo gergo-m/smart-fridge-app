@@ -1,3 +1,21 @@
 <resources>
     <string name="app_name">SmartFridge</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="login">Login</string>
+    <string name="register">Register</string>
+    <string name="registration">Registration</string>
+    <string name="email_address">Email address</string>
+    <string name="confirm_password">Confirm password</string>
+    <string name="cancel">Cancel</string>
+    <string name="phone_number">Phone number</string>
+    <string name="product_description">Termékleírás.</string>
+    <string-array name="regions">
+        <item>Africa</item>
+        <item>Asia</item>
+        <item>Europe</item>
+        <item>North America</item>
+        <item>Oceania</item>
+        <item>South America</item>
+    </string-array>
 </resources>
