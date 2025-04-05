@@ -2,16 +2,27 @@ package me.mgergo.smartfridge;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.credentials.GetCredentialRequest;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
 
 public class MainActivity extends AppCompatActivity {
     private static final String LOG_TAG = MainActivity.class.getName();
@@ -22,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
     EditText passwordET;
 
     private SharedPreferences preferences;
+    private FirebaseAuth fbAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,14 +51,34 @@ public class MainActivity extends AppCompatActivity {
 
         preferences = getSharedPreferences(PREF_KEY, MODE_PRIVATE);
 
+        fbAuth = FirebaseAuth.getInstance();
+
         Log.i(LOG_TAG, "onCreate");
     }
 
     public void login(View view) {
         String username = usernameET.getText().toString();
         String password = passwordET.getText().toString();
+
         Log.i(LOG_TAG, "User logged in: " + username + ", password: " + password);
-        // TODO: Login backend
+
+        fbAuth.signInWithEmailAndPassword(username, password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+            @Override
+            public void onComplete(@NonNull Task<AuthResult> task) {
+                if (task.isSuccessful()) {
+                    Log.d(LOG_TAG, "User successfully logged in");
+                    openFridge();
+                } else {
+                    Log.d(LOG_TAG, "User login failed");
+                    Toast.makeText(MainActivity.this, "Failed to log in with user: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+    }
+
+    private void openFridge() {
+        Intent intent = new Intent(this, FridgeListActivity.class);
+        startActivity(intent);
     }
 
     public void register(View view) {
@@ -56,39 +88,21 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        Log.i(LOG_TAG, "onStart");
+    public void loginWithGoogle(View view) {
     }
 
-    @Override
-    protected void onStop() {
-        super.onStop();
-        Log.i(LOG_TAG, "onStop");
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        Log.i(LOG_TAG, "onDestroy");
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putString("username", usernameET.getText().toString());
-        editor.putString("password", passwordET.getText().toString());
-        editor.apply();
-
-        Log.i(LOG_TAG, "onPause");
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.i(LOG_TAG, "onResume");
+    public void loginAsGuest(View view) {
+        fbAuth.signInAnonymously().addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+            @Override
+            public void onComplete(@NonNull Task<AuthResult> task) {
+                if (task.isSuccessful()) {
+                    Log.d(LOG_TAG, "Guest user successfully logged in");
+                    openFridge();
+                } else {
+                    Log.d(LOG_TAG, "Guest user login failed");
+                    Toast.makeText(MainActivity.this, "Failed to log in with guest user: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
+                }
+            }
+        });
     }
 }

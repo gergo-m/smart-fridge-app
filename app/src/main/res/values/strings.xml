@@ -10,6 +10,8 @@
     <string name="cancel">Cancel</string>
     <string name="phone_number">Phone number</string>
     <string name="product_description">Termékleírás.</string>
+    <string name="login_with_google">Login with Google</string>
+    <string name="login_as_guest">Login as Guest</string>
     <string-array name="regions">
         <item>Africa</item>
         <item>Asia</item>
