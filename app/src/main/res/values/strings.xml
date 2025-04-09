@@ -12,6 +12,11 @@
     <string name="product_description">Termékleírás.</string>
     <string name="login_with_google">Login with Google</string>
     <string name="login_as_guest">Login as Guest</string>
+    <string name="item_name_placeholder">Item name</string>
+    <string name="item_expiration_date_placeholder">Expiration date</string>
+    <string name="increase_amount_btn">+</string>
+    <string name="decrease_amount_btn">-</string>
+    <string name="item_amount_placeholder">0</string>
     <string-array name="regions">
         <item>Africa</item>
         <item>Asia</item>
@@ -20,4 +25,56 @@
         <item>Oceania</item>
         <item>South America</item>
     </string-array>
+
+    <string-array name="fridge_item_names">
+        <item>Milk</item>
+        <item>Eggs</item>
+        <item>Cheddar Cheese</item>
+        <item>Carrots</item>
+        <item>Apples</item>
+        <item>Greek Yogurt</item>
+        <item>Chicken Breast</item>
+        <item>Butter</item>
+        <item>Spinach</item>
+        <item>Orange Juice</item>
+    </string-array>
+
+    <string-array name="fridge_item_expiration_dates">
+        <item>2025-04-10</item>
+        <item>2025-04-14</item>
+        <item>2025-05-01</item>
+        <item>2025-04-09</item>
+        <item>2025-04-15</item>
+        <item>2025-04-12</item>
+        <item>2025-04-08</item>
+        <item>2025-06-01</item>
+        <item>2025-04-07</item>
+        <item>2025-04-20</item>
+    </string-array>
+
+    <integer-array name="fridge_item_amounts">
+        <item>1</item>  <!-- Milk: 1 bottle -->
+        <item>12</item> <!-- Eggs: dozen -->
+        <item>1</item>  <!-- Cheese: 1 block -->
+        <item>5</item>  <!-- Carrots: 5 pieces -->
+        <item>4</item>  <!-- Apples: 4 -->
+        <item>2</item>  <!-- Yogurt: 2 cups -->
+        <item>3</item>  <!-- Chicken breasts -->
+        <item>1</item>  <!-- Butter: 1 stick -->
+        <item>2</item>  <!-- Spinach: 2 bags -->
+        <item>1</item>  <!-- Juice: 1 bottle -->
+    </integer-array>
+
+    <array name="fridge_item_images">
+        <item>@drawable/milk</item>
+        <item>@drawable/eggs</item>
+        <item>@drawable/cheese</item>
+        <item>@drawable/carrot</item>
+        <item>@drawable/apple</item>
+        <item>@drawable/yogurt</item>
+        <item>@drawable/chicken</item>
+        <item>@drawable/butter</item>
+        <item>@drawable/spinach</item>
+        <item>@drawable/orange_juice</item>
+    </array>
 </resources>
