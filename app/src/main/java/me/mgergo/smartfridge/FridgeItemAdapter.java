@@ -108,18 +108,27 @@ public class FridgeItemAdapter extends RecyclerView.Adapter<FridgeItemAdapter.Vi
             amountText = itemView.findViewById(R.id.itemAmount);
             itemImage = itemView.findViewById(R.id.itemImage);
 
-            itemView.findViewById(R.id.increaseAmountButton).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Log.d(LOG_TAG, "Increased item amount");
+            itemView.findViewById(R.id.increaseAmountButton).setOnClickListener(view -> {
+                int position = getAdapterPosition();
+                FridgeItem currentItem = fridgeItemsData.get(position);
+                currentItem.setAmount(currentItem.getAmount() + 1);
+                notifyItemChanged(position);
+            });
+
+            itemView.findViewById(R.id.decreaseAmountButton).setOnClickListener(view -> {
+                int position = getAdapterPosition();
+                FridgeItem currentItem = fridgeItemsData.get(position);
+                if (currentItem.getAmount() > 0) {
+                    currentItem.setAmount(currentItem.getAmount() - 1);
+                    notifyItemChanged(position);
                 }
             });
         }
 
         public void bindTo(FridgeItem currentItem) {
             nameText.setText(currentItem.getName());
-            expirationDateText.setText(currentItem.getExpirationDate().toString());
-            amountText.setText("asd");
+            expirationDateText.setText("Expires on: " + currentItem.getExpirationDate().toString());
+            amountText.setText(String.valueOf(currentItem.getAmount()));
 
             Glide.with(context).load(currentItem.getImageResource()).into(itemImage);
         }

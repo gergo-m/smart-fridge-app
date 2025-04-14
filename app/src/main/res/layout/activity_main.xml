@@ -38,12 +38,12 @@
         app:layout_constraintTop_toBottomOf="@id/textViewWelcome" />
 
     <EditText
-        android:id="@+id/editTextLoginUsername"
+        android:id="@+id/editTextLoginEmail"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="36dp"
-        android:hint="@string/username"
-        android:inputType="textPersonName"
+        android:hint="@string/email_address"
+        android:inputType="textEmailAddress"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textViewSubtitle"
@@ -58,7 +58,7 @@
         android:inputType="textPassword"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/editTextLoginUsername"
+        app:layout_constraintTop_toBottomOf="@id/editTextLoginEmail"
         app:layout_constraintWidth_percent="0.8" />
 
     <com.google.android.material.button.MaterialButton
@@ -81,7 +81,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:backgroundTint="@color/button_background_color"
-        android:text="@string/register"
+        android:text="@string/create_an_account"
         android:onClick="register"
         app:cornerRadius="16dp"
         app:layout_constraintEnd_toEndOf="parent"

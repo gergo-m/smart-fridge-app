@@ -1,5 +1,6 @@
 package me.mgergo.smartfridge;
 
+import android.content.Intent;
 import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.util.Log;
@@ -75,7 +76,12 @@ public class FridgeListActivity extends AppCompatActivity {
         itemList.clear();
 
         for (int i = 0; i < itemsList.length; i++) {
-            itemList.add(new FridgeItem(itemsList[i], LocalDate.parse(itemsExpirationDate[i]), itemsAmount[i], itemsImageResource.getResourceId(i, 0)));
+            try {
+                LocalDate expirationDate = LocalDate.parse(itemsExpirationDate[i]);
+                itemList.add(new FridgeItem(itemsList[i], expirationDate, itemsAmount[i], itemsImageResource.getResourceId(i, 0)));
+            } catch (Exception e) {
+                Log.e(LOG_TAG, "Error parsing expiration date for item: " + itemsList[i], e);
+            }
         }
 
         itemsImageResource.recycle();
@@ -86,8 +92,8 @@ public class FridgeListActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
         getMenuInflater().inflate(R.menu.fridge_list_menu, menu);
-        MenuItem menuItem = menu.findItem(R.id.searchBar);
-        SearchView searchView = (SearchView) MenuItemCompat.getActionView(menuItem);
+        MenuItem searchItem = menu.findItem(R.id.searchBar);
+        SearchView searchView = (SearchView) searchItem.getActionView();
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String s) {
@@ -95,9 +101,8 @@ public class FridgeListActivity extends AppCompatActivity {
             }
 
             @Override
-            public boolean onQueryTextChange(String s) {
-                Log.d(LOG_TAG, s);
-                adapter.getFilter().filter(s);
+            public boolean onQueryTextChange(String text) {
+                adapter.getFilter().filter(text);
                 return false;
             }
         });
@@ -105,41 +110,36 @@ public class FridgeListActivity extends AppCompatActivity {
         return true;
     }
 
-    /*@Override
+    @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.viewSelector:
-                Log.d(LOG_TAG, "View selector clicked");
-                if (viewRow) {
-                    changeSpanCount(item, R.drawable.ic_view_grid, 1);
-                } else {
-                    changeSpanCount(item, R.drawable.ic_view_row, 2);
-                }
-                return true;
-            case R.id.settingsBtn:
-                Log.d(LOG_TAG, "Settings clicked");
-                return true;
-            case R.id.logoutBtn:
-                Log.d(LOG_TAG, "Logout clicked");
-                FirebaseAuth.getInstance().signOut();
-                finish();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        int itemId = item.getItemId();
+
+        if (itemId == R.id.viewSelector) {
+            if (viewRow) {
+                changeSpanCount(item, R.drawable.ic_view_grid, 2); // Switch to grid view
+            } else {
+                changeSpanCount(item, R.drawable.ic_view_row, 1); // Switch to list view
+            }
+            return true;
+        } else if (itemId == R.id.settingsBtn) {
+            // Intent settingsIntent = new Intent(this, SettingsActivity.class);
+            // startActivity(settingsIntent);
+            return true;
+        } else if (itemId == R.id.logoutBtn) {
+            FirebaseAuth.getInstance().signOut();
+            finish();
+            return true;
+        } else {
+            return super.onOptionsItemSelected(item);
         }
-    }*/
+    }
+
 
     private void changeSpanCount(MenuItem item, int drawableId, int spanCount) {
         viewRow = !viewRow;
         item.setIcon(drawableId);
-        GridLayoutManager layoutManager = (GridLayoutManager) recyclerView.getLayoutManager();
-        layoutManager.setSpanCount(spanCount);
-    }
 
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        // cart icon refresh
-
-        return super.onPrepareOptionsMenu(menu);
+        GridLayoutManager layoutManager = new GridLayoutManager(this, spanCount);
+        recyclerView.setLayoutManager(layoutManager);
     }
 }

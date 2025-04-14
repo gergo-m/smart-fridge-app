@@ -65,7 +65,7 @@ public class RegisterActivity extends AppCompatActivity implements AdapterView.O
         String username = preferences.getString("username", "");
         String password = preferences.getString("password", "");
 
-        usernameET.setText(username);
+        emailET.setText(username);
         passwordET.setText(password);
 
         regionSpinner.setOnItemSelectedListener(this);
@@ -75,8 +75,6 @@ public class RegisterActivity extends AppCompatActivity implements AdapterView.O
         regionSpinner.setAdapter(adapter);
 
         firebaseAuth = FirebaseAuth.getInstance();
-
-        Log.i(LOG_TAG, "onCreate");
     }
 
     public void register(View view) {

@@ -2,7 +2,6 @@ package me.mgergo.smartfridge;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.credentials.GetCredentialRequest;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -33,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String PREF_KEY = MainActivity.class.getPackage().toString();
     private static final int SECRET_KEY = 99;
 
-    EditText usernameET;
+    EditText emailET;
     EditText passwordET;
 
     private SharedPreferences preferences;
@@ -50,23 +49,21 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
-        usernameET = findViewById(R.id.editTextLoginUsername);
+        emailET = findViewById(R.id.editTextLoginEmail);
         passwordET = findViewById(R.id.editTextLoginPassword);
 
         preferences = getSharedPreferences(PREF_KEY, MODE_PRIVATE);
 
         fbAuth = FirebaseAuth.getInstance();
-
-        Log.i(LOG_TAG, "onCreate");
     }
 
     public void login(View view) {
-        String username = usernameET.getText().toString();
+        String email = emailET.getText().toString();
         String password = passwordET.getText().toString();
 
-        Log.i(LOG_TAG, "User logged in: " + username + ", password: " + password);
+        Log.i(LOG_TAG, "User logged in: " + email + ", password: " + password);
 
-        fbAuth.signInWithEmailAndPassword(username, password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+        fbAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if (task.isSuccessful()) {
@@ -88,7 +85,6 @@ public class MainActivity extends AppCompatActivity {
     public void register(View view) {
         Intent intent = new Intent(this, RegisterActivity.class);
         intent.putExtra("SECRET_KEY", SECRET_KEY);
-        // TODO
         startActivity(intent);
     }
 

@@ -32,4 +32,7 @@ public class FridgeItem {
         return imageResource;
     }
 
+    public void setAmount(int amount) {
+        this.amount = amount;
+    }
 }
