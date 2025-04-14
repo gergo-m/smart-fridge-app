@@ -1,2 +1,3 @@
-# smart-fridge-app
- Smart fridge mobile application (university project work).
+# **Egyetemi projektmunka - Mobil alkalmazásfejlesztés (SZTE) - Mindszenti Gergő**
+## **Általános információ**
+Válaszott téma: "Saját téma (Okoshűtő alkalmazás)"
