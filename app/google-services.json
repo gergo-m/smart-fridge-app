@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "400340380774",
+    "project_id": "androidsmartfridge",
+    "storage_bucket": "androidsmartfridge.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:400340380774:android:46b0bb6896e8ecd2f451a7",
+        "android_client_info": {
+          "package_name": "me.mgergo.smartfridge"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "400340380774-kruu9me2chfq6cgot23vhko0i7mec102.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "me.mgergo.smartfridge",
+            "certificate_hash": "597a014746c32ab08181dd44a7327f2f39b1de12"
+          }
+        },
+        {
+          "client_id": "400340380774-82pf57icjj1678ni3pknmrkb6uhikupb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBc2kyQFyrEmu9jOsKqM4NrJCmR2gXyGBo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "400340380774-82pf57icjj1678ni3pknmrkb6uhikupb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
