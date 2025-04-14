@@ -19,6 +19,8 @@
     <string name="item_amount_placeholder">0</string>
     <string name="welcome_message_title">Welcome to SmartFridge!</string>
     <string name="welcome_message_subtitle">Keep your kitchen organized and your groceries fresh. Let’s get started!</string>
+    <string name="register_message_title">Register to SmartFridge</string>
+    <string name="register_message_subtitle">Create your account to organize your kitchen!</string>
     <string-array name="regions">
         <item>Africa</item>
         <item>Asia</item>

@@ -85,8 +85,19 @@ public class RegisterActivity extends AppCompatActivity implements AdapterView.O
         String password = passwordET.getText().toString();
         String passwordConfirm = passwordConfirmET.getText().toString();
 
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            Toast.makeText(this, "Invalid email format", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (password.length() < 6) {
+            Toast.makeText(this, "Password must be at least 6 characters long", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         if (!password.equals(passwordConfirm)) {
-            Log.e(LOG_TAG, "Passwords do not match!");
+            Toast.makeText(this, "Passwords do not match!", Toast.LENGTH_SHORT).show();
+            return;
         }
 
         String region = regionSpinner.getSelectedItem().toString();

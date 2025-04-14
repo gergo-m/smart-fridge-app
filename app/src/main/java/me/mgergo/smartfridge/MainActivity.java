@@ -60,12 +60,6 @@ public class MainActivity extends AppCompatActivity {
         Log.i(LOG_TAG, "onCreate");
     }
 
-    @Override
-    public void startActivity(Intent intent) {
-        super.startActivity(intent);
-        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-    }
-
     public void login(View view) {
         String username = usernameET.getText().toString();
         String password = passwordET.getText().toString();
