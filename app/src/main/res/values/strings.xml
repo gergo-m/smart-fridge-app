@@ -17,6 +17,8 @@
     <string name="increase_amount_btn">+</string>
     <string name="decrease_amount_btn">-</string>
     <string name="item_amount_placeholder">0</string>
+    <string name="welcome_message_title">Welcome to SmartFridge!</string>
+    <string name="welcome_message_subtitle">Keep your kitchen organized and your groceries fresh. Let’s get started!</string>
     <string-array name="regions">
         <item>Africa</item>
         <item>Asia</item>

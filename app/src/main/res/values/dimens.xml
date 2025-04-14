@@ -3,4 +3,6 @@
     <dimen name="default_margin">20dp</dimen>
     <dimen name="default_edittext_width">380dp</dimen>
     <dimen name="default_vertical_bias_fields">0.02</dimen>
+    <dimen name="layout_horizontal_margin">16dp</dimen>
+    <dimen name="layout_vertical_margin">16dp</dimen>
 </resources>
