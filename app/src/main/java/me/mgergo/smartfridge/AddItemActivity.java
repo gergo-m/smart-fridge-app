@@ -1,51 +1,77 @@
 package me.mgergo.smartfridge;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
-import android.os.PersistableBundle;
+import android.provider.MediaStore;
+import android.util.Log;
 import android.widget.EditText;
-
-import androidx.activity.EdgeToEdge;
-import androidx.annotation.Nullable;
+import android.widget.ImageView;
+import android.widget.Toast;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-
+import com.bumptech.glide.Glide;
 import java.time.LocalDate;
 
 public class AddItemActivity extends AppCompatActivity {
+    private static final String LOG_TAG = AddItemActivity.class.getName();
+    private static final int PICK_IMAGE_REQUEST = 1;
     private EditText editTextName, editTextAmount, editTextExpiration;
+    private ImageView imagePreview;
+    private Uri selectedImageUri;
+
+    // Activity Result API-val
+    private final ActivityResultLauncher<Intent> galleryLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    selectedImageUri = result.getData().getData();
+                    Glide.with(this).load(selectedImageUri).into(imagePreview);
+                }
+            });
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_add_item);
-
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
 
         editTextName = findViewById(R.id.editTextItemName);
         editTextAmount = findViewById(R.id.editTextItemAmount);
         editTextExpiration = findViewById(R.id.editTextExpirationDate);
+        imagePreview = findViewById(R.id.imagePreview);
 
-        findViewById(R.id.buttonSaveItem).setOnClickListener(view -> saveItem());
+        findViewById(R.id.buttonGallery).setOnClickListener(v -> openGallery());
+        findViewById(R.id.buttonSaveItem).setOnClickListener(v -> saveItem());
+    }
+
+    private void openGallery() {
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        galleryLauncher.launch(intent);
     }
 
     private void saveItem() {
-        String name = editTextName.getText().toString();
-        int amount = Integer.parseInt(editTextAmount.getText().toString());
-        LocalDate expiration = LocalDate.parse(editTextExpiration.getText().toString());
+        try {
+            String name = editTextName.getText().toString();
+            int amount = Integer.parseInt(editTextAmount.getText().toString());
+            LocalDate expiration = LocalDate.parse(editTextExpiration.getText().toString());
+            int imageResourceId = R.drawable.apple;
 
-        FridgeItem newItem = new FridgeItem(name, expiration, amount, R.drawable.apple);
+            FridgeItem newItem;
+            if (selectedImageUri != null) {
+                newItem = new FridgeItem(name, expiration, amount, imageResourceId);
+                newItem.setImageUri(selectedImageUri.toString());
+            } else {
+                newItem = new FridgeItem(name, expiration, amount, imageResourceId);
+            }
 
-        Intent resultIntent = new Intent();
-        resultIntent.putExtra("newItem", newItem);
-        setResult(RESULT_OK, resultIntent);
-        finish();
+            Intent resultIntent = new Intent();
+            resultIntent.putExtra("newItem", newItem);
+            setResult(RESULT_OK, resultIntent);
+            finish();
+        } catch (Exception ex) {
+            Toast.makeText(this, "Error: " + ex.getMessage(), Toast.LENGTH_SHORT).show();
+            Log.e(LOG_TAG, "Error saving item", ex);
+        }
     }
 }

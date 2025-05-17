@@ -9,6 +9,42 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
+        <ImageView
+            android:id="@+id/imagePreview"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:layout_marginTop="16dp"
+            android:background="#DFDFDF"
+            android:scaleType="centerCrop"
+            android:src="@drawable/apple"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <LinearLayout
+            android:id="@+id/imageButtonLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/imagePreview" >
+
+            <Button
+                android:id="@+id/buttonGallery"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:text="@string/choose_image" />
+
+            <Button
+                android:id="@+id/buttonCamera"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/take_photo" />
+        </LinearLayout>
+
         <EditText
             android:id="@+id/editTextItemName"
             android:layout_width="match_parent"
@@ -16,7 +52,7 @@
             android:inputType="textPersonName|textCapWords"
             android:imeOptions="actionNext"
             android:hint="@string/item_name"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@id/imageButtonLayout" />
 
         <EditText
             android:id="@+id/editTextItemAmount"

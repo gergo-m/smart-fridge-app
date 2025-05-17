@@ -153,12 +153,18 @@ public class FridgeListActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 1 && resultCode == RESULT_OK && data != null) {
-            FridgeItem newItem = (FridgeItem) data.getSerializableExtra("newItem");
-            if (newItem != null)
-                addItemToFirestore(newItem);
+            try {
+                FridgeItem newItem = (FridgeItem) data.getSerializableExtra("newItem");
+                if (newItem != null) {
+                    addItemToFirestore(newItem);
+                }
+            } catch (Exception ex) {
+                Log.e(LOG_TAG, "Error creating new item", ex);
+                Toast.makeText(this, "Error: " + ex.getMessage(), Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
@@ -166,7 +172,9 @@ public class FridgeListActivity extends AppCompatActivity {
         db.collection("users").document(user.getUid()).collection("items")
                 .add(item.toMap())
                 .addOnSuccessListener(documentReference -> {
+                    item.setDocumentId(documentReference.getId());
                     Log.d(LOG_TAG, "Item added with ID: " + documentReference.getId());
+                    adapter.notifyItemInserted(itemList.size() - 1);
                 })
                 .addOnFailureListener(e -> Log.e(LOG_TAG, "Error adding item", e));
     }
@@ -187,7 +195,9 @@ public class FridgeListActivity extends AppCompatActivity {
                                 doc.getLong("amount").intValue(),
                                 doc.getLong("imageResource").intValue()
                         );
-                        item.setDocumentId(doc.getId());
+                        if (doc.contains("imageUri")) {
+                            item.setImageUri(doc.getString("imageUri"));
+                        }
                         itemList.add(item);
                     }
                     adapter.notifyDataSetChanged();

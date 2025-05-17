@@ -32,6 +32,8 @@
     <string name="expiry_date_yyyy_mm_dd">Expiry date (yyyy-mm-dd)</string>
     <string name="save">Save</string>
     <string name="delete">Delete</string>
+    <string name="choose_image">Choose image</string>
+    <string name="take_photo">Take photo</string>
     <string-array name="regions">
         <item>Africa</item>
         <item>Asia</item>

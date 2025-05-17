@@ -1,6 +1,7 @@
 package me.mgergo.smartfridge;
 
 import android.content.Context;
+import android.net.Uri;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -125,7 +126,15 @@ public class FridgeItemAdapter extends RecyclerView.Adapter<FridgeItemAdapter.Vi
             expirationDateText.setText("Expires on: " + currentItem.getExpirationDate().toString());
             amountText.setText(String.valueOf(currentItem.getAmount()));
 
-            Glide.with(context).load(currentItem.getImageResource()).into(itemImage);
+            if (currentItem.getImageUri() != null && !currentItem.getImageUri().isEmpty()) {
+                Glide.with(context)
+                        .load(Uri.parse(currentItem.getImageUri()))
+                        .into(itemImage);
+            } else {
+                Glide.with(context)
+                        .load(currentItem.getImageResource())
+                        .into(itemImage);
+            }
 
             itemView.findViewById(R.id.increaseAmountButton).setOnClickListener(view -> {
                 currentItem.setAmount(currentItem.getAmount() + 1);
