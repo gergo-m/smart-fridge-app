@@ -72,8 +72,8 @@ public class AddItemActivity extends AppCompatActivity {
                         imagePreview.setImageBitmap(bitmap);
                     } catch (IOException ex) {
                         Log.e(LOG_TAG, "Error loading image", ex);
-                    }
-                    selectedImageUri = photoUri; */
+                    } */
+                    selectedImageUri = photoUri;
                     loadImage(photoUri);
                 }
             });
@@ -134,7 +134,15 @@ public class AddItemActivity extends AppCompatActivity {
 
         btnGallery.setOnClickListener(v -> ImageUtils.openGallery(this, galleryLauncher));
         btnCamera.setOnClickListener(v -> {
-            ImageUtils.openCamera(this, cameraLauncher, "me.mgergo.smartfridge.fileprovider");
+            try {
+                File photoFile = createImageFile();
+                photoUri = FileProvider.getUriForFile(this,
+                        "me.mgergo.smartfridge.fileprovider",
+                        photoFile);
+                ImageUtils.openCamera(this, cameraLauncher, photoUri);
+            } catch (IOException ex) {
+                Toast.makeText(this, "Fájl létrehozási hiba", Toast.LENGTH_SHORT).show();
+            }
         });
         btnSave.setOnClickListener(v -> saveItem());
     }
@@ -151,6 +159,7 @@ public class AddItemActivity extends AppCompatActivity {
     private void loadImage(Uri imageUri) {
         Glide.with(this)
                 .load(imageUri)
+                .override(800, 800)
                 .centerCrop()
                 .into(imagePreview);
     }
@@ -164,6 +173,7 @@ public class AddItemActivity extends AppCompatActivity {
                 return;
             }
 
+            findViewById(R.id.buttonSaveItem).setEnabled(false);
             progressBar.setVisibility(View.VISIBLE);
 
             String name = editTextName.getText().toString();
@@ -195,11 +205,13 @@ public class AddItemActivity extends AppCompatActivity {
                         imageRef.getDownloadUrl().addOnSuccessListener(uri -> {
                             item.setImageUrl(uri.toString());
                             saveItemToFirestore(item);
+                            findViewById(R.id.buttonSaveItem).setEnabled(true);
                             progressBar.setVisibility(View.GONE);
                             finish();
                         });
                     })
                     .addOnFailureListener(e -> {
+                        findViewById(R.id.buttonSaveItem).setEnabled(true);
                         progressBar.setVisibility(View.GONE);
                         Toast.makeText(this, "Image upload failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     });
@@ -210,10 +222,12 @@ public class AddItemActivity extends AppCompatActivity {
         db.collection("users").document(user.getUid()).collection("items")
                 .add(item.toMap())
                 .addOnSuccessListener(documentReference -> {
+                    findViewById(R.id.buttonSaveItem).setEnabled(true);
                     progressBar.setVisibility(View.GONE);
                     Log.d(LOG_TAG, "Item saved: " + documentReference.getId());
                 })
                 .addOnFailureListener(e -> {
+                    findViewById(R.id.buttonSaveItem).setEnabled(true);
                     progressBar.setVisibility(View.GONE);
                     Toast.makeText(this, "Error saving item: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });

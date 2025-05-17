@@ -33,7 +33,7 @@ public class ImageUtils {
         }
     }
 
-    private static File createImageFile(Activity activity) throws IOException {
+    static File createImageFile(Activity activity) throws IOException {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         return File.createTempFile(
                 "JPEG_" + timeStamp + "_",
