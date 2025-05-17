@@ -1,6 +1,7 @@
 package me.mgergo.smartfridge;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -112,6 +113,16 @@ public class FridgeItemAdapter extends RecyclerView.Adapter<FridgeItemAdapter.Vi
             amountText = itemView.findViewById(R.id.itemAmount);
             itemImage = itemView.findViewById(R.id.itemImage);
             deleteIcon = itemView.findViewById(R.id.deleteIcon);
+
+            itemView.setOnClickListener(v -> {
+                int position = getAdapterPosition();
+                if (position != RecyclerView.NO_POSITION) {
+                    FridgeItem item = fridgeItemsData.get(position);
+                    Intent intent = new Intent(context, EditItemActivity.class);
+                    intent.putExtra("item", item);
+                    context.startActivity(intent);
+                }
+            });
 
             deleteIcon.setOnClickListener(view -> {
                 int position = getAdapterPosition();

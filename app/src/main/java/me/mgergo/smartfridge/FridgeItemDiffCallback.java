@@ -37,7 +37,11 @@ public class FridgeItemDiffCallback extends DiffUtil.Callback {
         return oldItem.getName().equals(newItem.getName())
                 && oldItem.getExpirationDate().equals(newItem.getExpirationDate())
                 && oldItem.getAmount() == newItem.getAmount()
-                && oldItem.getImageUrl().equals(newItem.getImageUrl());
+                && (
+                (oldItem.getImageUrl() == null && newItem.getImageUrl() == null)
+                        || (oldItem.getImageUrl() != null && oldItem.getImageUrl().equals(newItem.getImageUrl()))
+        );
     }
+
 
 }
