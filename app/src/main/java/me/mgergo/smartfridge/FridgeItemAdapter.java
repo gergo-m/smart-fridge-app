@@ -117,6 +117,35 @@ public class FridgeItemAdapter extends RecyclerView.Adapter<FridgeItemAdapter.Vi
                 FridgeItem item = fridgeItemsData.get(position);
                 ((FridgeListActivity) context).deleteItem(item);
             });
+
+            itemView.findViewById(R.id.increaseAmountButton).setOnClickListener(view -> {
+                int position = getBindingAdapterPosition();
+                if (position != RecyclerView.NO_POSITION) {
+                    FridgeItem currentItem = fridgeItemsData.get(position);
+                    if (currentItem.getDocumentId() != null) {
+                        currentItem.setAmount(currentItem.getAmount() + 1);
+                        ((FridgeListActivity) context).updateItemAmount(currentItem, currentItem.getAmount());
+                    } else {
+                        Log.e(LOG_TAG, "Error: documentId null in RecyclerView");
+                    }
+                    notifyItemChanged(position);
+
+                }
+            });
+
+            itemView.findViewById(R.id.decreaseAmountButton).setOnClickListener(view -> {
+                int position = getBindingAdapterPosition();
+                if (position != RecyclerView.NO_POSITION && currentItem.getAmount() > 0) {
+                    FridgeItem currentItem = fridgeItemsData.get(position);
+                    if (currentItem.getDocumentId() != null) {
+                        currentItem.setAmount(currentItem.getAmount() - 1);
+                        ((FridgeListActivity) context).updateItemAmount(currentItem, currentItem.getAmount());
+                    } else {
+                        Log.e(LOG_TAG, "Error: documentId null in RecyclerView");
+                    }
+                    notifyItemChanged(position);
+                }
+            });
         }
 
         public void bindTo(FridgeItem currentItem) {
@@ -135,21 +164,6 @@ public class FridgeItemAdapter extends RecyclerView.Adapter<FridgeItemAdapter.Vi
                         .load(currentItem.getImageResource())
                         .into(itemImage);
             }
-
-            itemView.findViewById(R.id.increaseAmountButton).setOnClickListener(view -> {
-                currentItem.setAmount(currentItem.getAmount() + 1);
-                ((FridgeListActivity) context).updateItemAmount(currentItem, currentItem.getAmount());
-                amountText.setText(String.valueOf(currentItem.getAmount()));
-            });
-
-            itemView.findViewById(R.id.decreaseAmountButton).setOnClickListener(view -> {
-                if (currentItem.getAmount() > 0) {
-                    currentItem.setAmount(currentItem.getAmount() - 1);
-                    ((FridgeListActivity) context).updateItemAmount(currentItem, currentItem.getAmount());
-                    amountText.setText(String.valueOf(currentItem.getAmount()));
-                }
-            });
-
         }
     }
 

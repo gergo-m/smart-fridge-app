@@ -1,5 +1,6 @@
 package me.mgergo.smartfridge;
 
+import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -22,6 +23,8 @@ import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+import java.util.Calendar;
 import java.util.Date;
 
 public class AddItemActivity extends AppCompatActivity {
@@ -75,9 +78,29 @@ public class AddItemActivity extends AppCompatActivity {
 
         findViewById(R.id.buttonGallery).setOnClickListener(v -> openGallery());
         findViewById(R.id.buttonSaveItem).setOnClickListener(v -> saveItem());
+        setupDatePicker();
 
         initializeViews();
         setupButtons();
+    }
+
+    private void setupDatePicker() {
+        editTextExpiration.setOnClickListener(v -> showDatePickerDialog());
+    }
+
+    private void showDatePickerDialog() {
+        Calendar calendar = Calendar.getInstance();
+        DatePickerDialog datePicker = new DatePickerDialog(
+                this,
+                (view, year, month, day) -> {
+                    LocalDate selectedDate = LocalDate.of(year, month + 1, day);
+                    editTextExpiration.setText(selectedDate.toString());
+                },
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+        );
+        datePicker.show();
     }
 
     private void initializeViews() {
@@ -148,6 +171,13 @@ public class AddItemActivity extends AppCompatActivity {
 
     private void saveItem() {
         try {
+            if (editTextName.getText().toString().isEmpty()
+                    || editTextAmount.getText().toString().isEmpty()
+                    || editTextExpiration.getText().toString().isEmpty()) {
+                Toast.makeText(this, "Fill out all fields!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             String name = editTextName.getText().toString();
             int amount = Integer.parseInt(editTextAmount.getText().toString());
             LocalDate expiration = LocalDate.parse(editTextExpiration.getText().toString());
@@ -161,6 +191,8 @@ public class AddItemActivity extends AppCompatActivity {
             resultIntent.putExtra("newItem", newItem);
             setResult(RESULT_OK, resultIntent);
             finish();
+        } catch (DateTimeParseException ex) {
+            Toast.makeText(this, "Invalid date format!", Toast.LENGTH_SHORT).show();
         } catch (Exception ex) {
             Toast.makeText(this, "Error: " + ex.getMessage(), Toast.LENGTH_SHORT).show();
             Log.e(LOG_TAG, "Error saving item", ex);

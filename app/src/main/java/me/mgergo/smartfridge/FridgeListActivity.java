@@ -18,6 +18,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.MenuItemCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -184,30 +185,51 @@ public class FridgeListActivity extends AppCompatActivity {
                 .addSnapshotListener((value, error) -> {
                     if (error != null) {
                         Log.w(LOG_TAG, "Firestore error", error);
+                        Toast.makeText(this, "Error: Firestore error", Toast.LENGTH_SHORT).show();
                         return;
                     }
 
-                    itemList.clear();
-                    for (QueryDocumentSnapshot doc : value) {
-                        FridgeItem item = new FridgeItem(
-                                doc.getString("name"),
-                                LocalDate.parse(doc.getString("expirationDate")),
-                                doc.getLong("amount").intValue(),
-                                doc.getLong("imageResource").intValue()
-                        );
-                        if (doc.contains("imageUri")) {
-                            item.setImageUri(doc.getString("imageUri"));
+                    runOnUiThread(() -> {
+                        List<FridgeItem> newItems = new ArrayList<>();
+                        for (QueryDocumentSnapshot doc : value) {
+                            String name = doc.getString("name");
+                            LocalDate expiration = LocalDate.parse(doc.getString("expirationDate"));
+                            int amount = doc.getLong("amount").intValue();
+                            int imageResource = doc.getLong("imageResource").intValue();
+                            String imageUri = doc.getString("imageUri");
+
+                            FridgeItem item = new FridgeItem(name, expiration, amount, imageResource);
+                            item.setDocumentId(doc.getId());
+                            if (imageUri != null) {
+                                item.setImageUri(imageUri);
+                            }
+                            newItems.add(item);
                         }
-                        itemList.add(item);
-                    }
-                    adapter.notifyDataSetChanged();
+
+                        DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new FridgeItemDiffCallback(itemList, newItems));
+                        itemList.clear();
+                        itemList.addAll(newItems);
+                        diffResult.dispatchUpdatesTo(adapter);
+                    });
                 });
     }
 
     public void updateItemAmount(FridgeItem item, int newAmount) {
+        if (item.getDocumentId() == null || item.getDocumentId().isEmpty()) {
+            Log.e(LOG_TAG, "Error: documentId null");
+            Toast.makeText(this, "Error: documentId null", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         db.collection("users").document(user.getUid()).collection("items")
                 .document(item.getDocumentId())
                 .update("amount", newAmount)
+                .addOnSuccessListener(aVoid -> {
+                    int index = itemList.indexOf(item);
+                    if (index != -1) {
+                        itemList.get(index).setAmount(newAmount);
+                    }
+                })
                 .addOnFailureListener(e -> Log.w(LOG_TAG, "Update failed", e));
     }
 

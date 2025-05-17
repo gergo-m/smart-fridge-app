@@ -67,6 +67,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/expiry_date_yyyy_mm_dd"
+            android:inputType="date"
             app:layout_constraintTop_toBottomOf="@id/editTextItemAmount" />
 
         <Button

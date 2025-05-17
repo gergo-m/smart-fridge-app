@@ -12,9 +12,12 @@ public class FridgeItem implements Serializable {
     private String name;
     private LocalDate expirationDate;
     private int amount;
-    private final int imageResource;
+    private int imageResource;
+
     private String documentId;
     private String imageUri;
+
+    public FridgeItem() {}
 
     public FridgeItem(String name, LocalDate expirationDate, int amount, int imageResource) {
         this.name = name;
@@ -22,7 +25,7 @@ public class FridgeItem implements Serializable {
         this.amount = amount;
         this.imageResource = imageResource;
         this.imageUri = null;
-        this.documentId = null;
+        this.documentId = "";
     }
 
     public String getName() {
