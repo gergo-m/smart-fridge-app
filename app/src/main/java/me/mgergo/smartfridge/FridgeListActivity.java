@@ -1,8 +1,12 @@
 package me.mgergo.smartfridge;
 
+import android.Manifest;
+import android.app.AlertDialog;
 import android.app.ComponentCaller;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.TypedArray;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -11,9 +15,15 @@ import android.widget.SearchView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.MenuItemCompat;
 import androidx.core.view.ViewCompat;
@@ -34,6 +44,7 @@ import java.util.List;
 
 public class FridgeListActivity extends AppCompatActivity {
 
+    private static final int REQUEST_CODE_POST_NOTIFICATION = 1001;
     private static final String LOG_TAG = FridgeListActivity.class.getName();
     private FirebaseUser user;
     private FirebaseAuth fbAuth;
@@ -66,6 +77,16 @@ public class FridgeListActivity extends AppCompatActivity {
             finish();
         }
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                if (shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
+                    showPermissionExplanationDialog();
+                } else {
+                    requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+                }
+            }
+        }
+
         recyclerView = findViewById(R.id.listRecyclerView);
         recyclerView.setLayoutManager(new GridLayoutManager(this, gridNumber));
         itemList = new ArrayList<>();
@@ -84,6 +105,50 @@ public class FridgeListActivity extends AppCompatActivity {
                 finish();
             }
         });
+    }
+
+    private final ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+        if (isGranted) {
+            sendTestNotification();
+        } else {
+            Toast.makeText(this, "Notification permission denied", Toast.LENGTH_SHORT).show();
+        }
+    });
+
+    private void sendTestNotification() {
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "expiry_channel")
+                .setContentTitle("Thanks for the permission!")
+                .setContentText("We'll notify you when an item is about to expire.")
+                .setSmallIcon(R.drawable.fridge_icon)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+
+        try {
+            NotificationManagerCompat.from(this).notify(0, builder.build());
+        } catch (SecurityException e) {
+            Log.e(LOG_TAG, "Error sending notification: " + e.getMessage());
+        }
+    }
+
+    private void showPermissionExplanationDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Notification permission")
+                .setMessage("We need your permission to send expiry notifications.")
+                .setPositiveButton("OK", (dialog, which) -> {
+                    requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+                })
+                .show();
+    }
+
+    private void checkAndSendExpiryNotifications() {
+        LocalDate today = LocalDate.now();
+        LocalDate soon = today.plusDays(3);
+
+        for (FridgeItem item : itemList) {
+            LocalDate expiry = item.getExpirationDate();
+            if ((expiry.isAfter(today) || expiry.isEqual(today)) && !expiry.isAfter(soon)) {
+                NotificationHelper.sendExpiryNotification(this, item);
+            }
+        }
     }
 
     private void initializeData() {
@@ -211,6 +276,7 @@ public class FridgeListActivity extends AppCompatActivity {
                         itemList.addAll(newItems);
                         diffResult.dispatchUpdatesTo(adapter);
                     });
+                    checkAndSendExpiryNotifications();
                 });
     }
 

@@ -48,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        NotificationHelper.createNotificationChannel(this);
 
         emailET = findViewById(R.id.editTextLoginEmail);
         passwordET = findViewById(R.id.editTextLoginPassword);
