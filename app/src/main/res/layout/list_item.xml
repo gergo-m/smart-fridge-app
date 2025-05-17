@@ -35,6 +35,15 @@
             android:textSize="14sp"
             android:textColor="@color/text_color_secondary" />
 
+        <ImageView
+            android:id="@+id/deleteIcon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_alignParentEnd="true"
+            android:layout_margin="8dp"
+            android:src="@drawable/delete_black"
+            android:contentDescription="@string/delete" />
+
         <LinearLayout
             android:id="@+id/buttonLayout"
             android:layout_width="match_parent"

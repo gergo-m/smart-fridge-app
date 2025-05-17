@@ -1,5 +1,6 @@
 package me.mgergo.smartfridge;
 
+import android.app.ComponentCaller;
 import android.content.Intent;
 import android.content.res.TypedArray;
 import android.os.Bundle;
@@ -7,9 +8,11 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.SearchView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.MenuItemCompat;
@@ -20,16 +23,20 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class FridgeListActivity extends AppCompatActivity {
 
     private static final String LOG_TAG = FridgeListActivity.class.getName();
     private FirebaseUser user;
     private FirebaseAuth fbAuth;
+    private FirebaseFirestore db;
 
     private RecyclerView recyclerView;
     private ArrayList<FridgeItem> itemList;
@@ -49,6 +56,7 @@ public class FridgeListActivity extends AppCompatActivity {
             return insets;
         });
 
+        db = FirebaseFirestore.getInstance();
         user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
             Log.d(LOG_TAG, "Authenticated user.");
@@ -64,7 +72,17 @@ public class FridgeListActivity extends AppCompatActivity {
         adapter = new FridgeItemAdapter(this, itemList);
         recyclerView.setAdapter(adapter);
 
-        initializeData();
+        // initializeData();
+        loadItemsFromFirestore();
+
+        findViewById(R.id.fab).setOnClickListener(view -> {
+            if (user != null) {
+                startActivityForResult(new Intent(this, AddItemActivity.class), 1);
+            } else {
+                Toast.makeText(this, "Please log in first!", Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        });
     }
 
     private void initializeData() {
@@ -132,6 +150,65 @@ public class FridgeListActivity extends AppCompatActivity {
         } else {
             return super.onOptionsItemSelected(item);
         }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1 && resultCode == RESULT_OK && data != null) {
+            FridgeItem newItem = (FridgeItem) data.getSerializableExtra("newItem");
+            if (newItem != null)
+                addItemToFirestore(newItem);
+        }
+    }
+
+    private void addItemToFirestore(FridgeItem item) {
+        db.collection("users").document(user.getUid()).collection("items")
+                .add(item.toMap())
+                .addOnSuccessListener(documentReference -> {
+                    Log.d(LOG_TAG, "Item added with ID: " + documentReference.getId());
+                })
+                .addOnFailureListener(e -> Log.e(LOG_TAG, "Error adding item", e));
+    }
+
+    private void loadItemsFromFirestore() {
+        db.collection("users").document(user.getUid()).collection("items")
+                .addSnapshotListener((value, error) -> {
+                    if (error != null) {
+                        Log.w(LOG_TAG, "Firestore error", error);
+                        return;
+                    }
+
+                    itemList.clear();
+                    for (QueryDocumentSnapshot doc : value) {
+                        FridgeItem item = new FridgeItem(
+                                doc.getString("name"),
+                                LocalDate.parse(doc.getString("expirationDate")),
+                                doc.getLong("amount").intValue(),
+                                doc.getLong("imageResource").intValue()
+                        );
+                        item.setDocumentId(doc.getId());
+                        itemList.add(item);
+                    }
+                    adapter.notifyDataSetChanged();
+                });
+    }
+
+    public void updateItemAmount(FridgeItem item, int newAmount) {
+        db.collection("users").document(user.getUid()).collection("items")
+                .document(item.getDocumentId())
+                .update("amount", newAmount)
+                .addOnFailureListener(e -> Log.w(LOG_TAG, "Update failed", e));
+    }
+
+    public void deleteItem(FridgeItem item) {
+        db.collection("users").document(user.getUid()).collection("items")
+                .document(item.getDocumentId())
+                .delete()
+                .addOnSuccessListener(aVoid -> {
+                    itemList.remove(item);
+                    adapter.notifyDataSetChanged();
+                });
     }
 
 

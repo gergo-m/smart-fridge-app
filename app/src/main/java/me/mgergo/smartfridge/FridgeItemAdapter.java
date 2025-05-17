@@ -22,7 +22,7 @@ import java.util.ArrayList;
 public class FridgeItemAdapter extends RecyclerView.Adapter<FridgeItemAdapter.ViewHolder> implements Filterable {
     private ArrayList<FridgeItem> fridgeItemsData;
     private ArrayList<FridgeItem> fridgeItemsDataAll;
-    private Context context;
+    private final Context context;
     private int lastPosition = -1;
 
     private static final String LOG_TAG = FridgeItemAdapter.class.getName();
@@ -99,6 +99,8 @@ public class FridgeItemAdapter extends RecyclerView.Adapter<FridgeItemAdapter.Vi
         private TextView expirationDateText;
         private TextView amountText;
         private ImageView itemImage;
+        private FridgeItem currentItem;
+        private ImageView deleteIcon;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -107,30 +109,38 @@ public class FridgeItemAdapter extends RecyclerView.Adapter<FridgeItemAdapter.Vi
             expirationDateText = itemView.findViewById(R.id.itemExpirationDate);
             amountText = itemView.findViewById(R.id.itemAmount);
             itemImage = itemView.findViewById(R.id.itemImage);
+            deleteIcon = itemView.findViewById(R.id.deleteIcon);
 
-            itemView.findViewById(R.id.increaseAmountButton).setOnClickListener(view -> {
+            deleteIcon.setOnClickListener(view -> {
                 int position = getAdapterPosition();
-                FridgeItem currentItem = fridgeItemsData.get(position);
-                currentItem.setAmount(currentItem.getAmount() + 1);
-                notifyItemChanged(position);
-            });
-
-            itemView.findViewById(R.id.decreaseAmountButton).setOnClickListener(view -> {
-                int position = getAdapterPosition();
-                FridgeItem currentItem = fridgeItemsData.get(position);
-                if (currentItem.getAmount() > 0) {
-                    currentItem.setAmount(currentItem.getAmount() - 1);
-                    notifyItemChanged(position);
-                }
+                FridgeItem item = fridgeItemsData.get(position);
+                ((FridgeListActivity) context).deleteItem(item);
             });
         }
 
         public void bindTo(FridgeItem currentItem) {
+            this.currentItem = currentItem;
+
             nameText.setText(currentItem.getName());
             expirationDateText.setText("Expires on: " + currentItem.getExpirationDate().toString());
             amountText.setText(String.valueOf(currentItem.getAmount()));
 
             Glide.with(context).load(currentItem.getImageResource()).into(itemImage);
+
+            itemView.findViewById(R.id.increaseAmountButton).setOnClickListener(view -> {
+                currentItem.setAmount(currentItem.getAmount() + 1);
+                ((FridgeListActivity) context).updateItemAmount(currentItem, currentItem.getAmount());
+                amountText.setText(String.valueOf(currentItem.getAmount()));
+            });
+
+            itemView.findViewById(R.id.decreaseAmountButton).setOnClickListener(view -> {
+                if (currentItem.getAmount() > 0) {
+                    currentItem.setAmount(currentItem.getAmount() - 1);
+                    ((FridgeListActivity) context).updateItemAmount(currentItem, currentItem.getAmount());
+                    amountText.setText(String.valueOf(currentItem.getAmount()));
+                }
+            });
+
         }
     }
 

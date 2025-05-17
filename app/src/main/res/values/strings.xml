@@ -26,6 +26,12 @@
     <string name="view">View</string>
     <string name="settings">Settings</string>
     <string name="log_out">Log out</string>
+    <string name="add_item">Add item</string>
+    <string name="item_name">Item name</string>
+    <string name="amount">Amount</string>
+    <string name="expiry_date_yyyy_mm_dd">Expiry date (yyyy-mm-dd)</string>
+    <string name="save">Save</string>
+    <string name="delete">Delete</string>
     <string-array name="regions">
         <item>Africa</item>
         <item>Asia</item>
