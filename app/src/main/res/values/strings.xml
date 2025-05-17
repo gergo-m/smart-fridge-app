@@ -34,6 +34,8 @@
     <string name="delete">Delete</string>
     <string name="choose_image">Choose image</string>
     <string name="take_photo">Take photo</string>
+    <string name="sort">Sort</string>
+    <string name="expires_soon">Expires soon</string>
     <string-array name="regions">
         <item>Africa</item>
         <item>Asia</item>

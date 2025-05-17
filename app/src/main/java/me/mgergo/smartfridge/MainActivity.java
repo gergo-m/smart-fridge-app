@@ -70,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
                 if (task.isSuccessful()) {
                     Log.d(LOG_TAG, "User successfully logged in");
                     openFridge();
+                    overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
                 } else {
                     Log.d(LOG_TAG, "User login failed");
                     Toast.makeText(MainActivity.this, "Failed to log in with user: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();

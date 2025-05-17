@@ -15,6 +15,18 @@
         app:showAsAction="ifRoom" />
 
     <item
+        android:id="@+id/sortSelector"
+        android:title="@string/sort"
+        android:icon="@drawable/ic_sort"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/filterSoonBtn"
+        android:title="@string/expires_soon"
+        android:icon="@drawable/ic_timer"
+        app:showAsAction="ifRoom|withText" />
+
+    <item
         android:id="@+id/settingsBtn"
         android:title="@string/settings"
         app:showAsAction="never"

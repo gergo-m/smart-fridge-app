@@ -1,9 +1,13 @@
 package me.mgergo.smartfridge;
 
 import android.Manifest;
+import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.ComponentCaller;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.TypedArray;
 import android.os.Build;
@@ -40,6 +44,7 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -57,6 +62,8 @@ public class FridgeListActivity extends AppCompatActivity {
 
     private int gridNumber = 1;
     private boolean viewRow = true;
+    private String sortMode = "expiration";
+    private boolean filterSoon = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,6 +106,15 @@ public class FridgeListActivity extends AppCompatActivity {
 
         // initializeData();
         loadItemsFromFirestore();
+        checkAndSendExpiryNotifications();
+
+        SharedPreferences prefs = getSharedPreferences("fridge_prefs", MODE_PRIVATE);
+        boolean alarmSet = prefs.getBoolean("alarm_set", false);
+
+        if (!alarmSet) {
+            scheduleDailyAlarm();
+            prefs.edit().putBoolean("alarm_set", true).apply();
+        }
 
         findViewById(R.id.fab).setOnClickListener(view -> {
             if (user != null) {
@@ -107,6 +123,51 @@ public class FridgeListActivity extends AppCompatActivity {
                 Toast.makeText(this, "Please log in first!", Toast.LENGTH_SHORT).show();
                 finish();
             }
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadSortedItemsFromFirestore();
+        checkAndSendExpiryNotifications();
+    }
+
+    private void loadSortedItemsFromFirestore() {
+        Query query;
+        if ("abc".equals(sortMode)) {
+            query = db.collection("users").document(user.getUid()).collection("items")
+                    .orderBy("name", Query.Direction.ASCENDING);
+        } else if ("amount".equals(sortMode)) {
+            query = db.collection("users").document(user.getUid()).collection("items")
+                    .orderBy("amount", Query.Direction.DESCENDING);
+        } else {
+            query = db.collection("users").document(user.getUid()).collection("items")
+                    .orderBy("expirationDate", Query.Direction.ASCENDING);
+        }
+
+        query.get().addOnSuccessListener(value -> {
+            List<FridgeItem> newItems = new ArrayList<>();
+            for (QueryDocumentSnapshot doc : value) {
+                String name = doc.getString("name");
+                LocalDate expiration = LocalDate.parse(doc.getString("expirationDate"));
+                int amount = doc.getLong("amount").intValue();
+                int imageResource = doc.getLong("imageResource").intValue();
+                String imageUrl = doc.getString("imageUrl");
+
+                FridgeItem item = new FridgeItem(name, expiration, amount, imageResource);
+                item.setDocumentId(doc.getId());
+                if (imageUrl != null) {
+                    item.setImageUrl(imageUrl);
+                }
+                newItems.add(item);
+            }
+            runOnUiThread(() -> {
+                DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new FridgeItemDiffCallback(itemList, newItems));
+                itemList.clear();
+                itemList.addAll(newItems);
+                diffResult.dispatchUpdatesTo(adapter);
+            });
         });
     }
 
@@ -154,27 +215,6 @@ public class FridgeListActivity extends AppCompatActivity {
         }
     }
 
-    private void initializeData() {
-        String[] itemsList = getResources().getStringArray(R.array.fridge_item_names);
-        String[] itemsExpirationDate = getResources().getStringArray(R.array.fridge_item_expiration_dates);
-        int[] itemsAmount = getResources().getIntArray(R.array.fridge_item_amounts);
-        TypedArray itemsImageResource = getResources().obtainTypedArray(R.array.fridge_item_images);
-
-        itemList.clear();
-
-        for (int i = 0; i < itemsList.length; i++) {
-            try {
-                LocalDate expirationDate = LocalDate.parse(itemsExpirationDate[i]);
-                itemList.add(new FridgeItem(itemsList[i], expirationDate, itemsAmount[i], itemsImageResource.getResourceId(i, 0)));
-            } catch (Exception e) {
-                Log.e(LOG_TAG, "Error parsing expiration date for item: " + itemsList[i], e);
-            }
-        }
-
-        itemsImageResource.recycle();
-        adapter.notifyDataSetChanged();
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
@@ -208,6 +248,15 @@ public class FridgeListActivity extends AppCompatActivity {
                 changeSpanCount(item, R.drawable.ic_view_row, 1); // Switch to list view
             }
             return true;
+        } else if (itemId == R.id.sortSelector) {
+            showSortDialog();
+            return true;
+        } else if (itemId == R.id.filterSoonBtn) {
+            filterSoon = !filterSoon;
+            loadItemsFromFirestore();
+            String msg = filterSoon ? "Showing soon-to-expire items" : "Showing all items";
+            Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+            return true;
         } else if (itemId == R.id.settingsBtn) {
             // Intent settingsIntent = new Intent(this, SettingsActivity.class);
             // startActivity(settingsIntent);
@@ -216,9 +265,29 @@ public class FridgeListActivity extends AppCompatActivity {
             FirebaseAuth.getInstance().signOut();
             finish();
             return true;
-        } else {
-            return super.onOptionsItemSelected(item);
         }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void showSortDialog() {
+        String[] sortOptions = {"expiration", "name", "amount"};
+        new AlertDialog.Builder(this)
+                .setTitle("Sorting by...")
+                .setItems(sortOptions, (dialog, which) -> {
+                    switch (which) {
+                        case 0:
+                            sortMode = "expiration";
+                            break;
+                        case 1:
+                            sortMode = "abc";
+                            break;
+                        case 2:
+                            sortMode = "amount";
+                            break;
+                    }
+                    loadSortedItemsFromFirestore();
+                })
+                .show();
     }
 
     @Override
@@ -248,39 +317,45 @@ public class FridgeListActivity extends AppCompatActivity {
     }
 
     private void loadItemsFromFirestore() {
-        db.collection("users").document(user.getUid()).collection("items")
-                .orderBy("expirationDate", Query.Direction.ASCENDING)
-                .addSnapshotListener((value, error) -> {
-                    if (error != null) {
-                        Log.w(LOG_TAG, "Firestore error", error);
-                        Toast.makeText(this, "Error: Firestore error", Toast.LENGTH_SHORT).show();
-                        return;
+        Query query;
+        if (filterSoon) {
+            LocalDate today = LocalDate.now();
+            LocalDate soon = today.plusDays(3);
+            query = db.collection("users").document(user.getUid()).collection("items")
+                    .whereGreaterThanOrEqualTo("expirationDate", today.toString())
+                    .whereLessThanOrEqualTo("expirationDate", soon.toString())
+                    .orderBy("expirationDate", Query.Direction.ASCENDING);
+        } else {
+            query = db.collection("users").document(user.getUid()).collection("items")
+                    .orderBy("expirationDate", Query.Direction.ASCENDING);
+        }
+
+        query.get().addOnSuccessListener(value -> {
+                List<FridgeItem> newItems = new ArrayList<>();
+                for (QueryDocumentSnapshot doc : value) {
+                    String name = doc.getString("name");
+                    LocalDate expiration = LocalDate.parse(doc.getString("expirationDate"));
+                    int amount = doc.getLong("amount").intValue();
+                    int imageResource = doc.getLong("imageResource").intValue();
+                    String imageUrl = doc.getString("imageUrl");
+
+                    FridgeItem item = new FridgeItem(name, expiration, amount, imageResource);
+                    item.setDocumentId(doc.getId());
+                    if (imageUrl != null) {
+                        item.setImageUrl(imageUrl);
                     }
-
-
-                        List<FridgeItem> newItems = new ArrayList<>();
-                        for (QueryDocumentSnapshot doc : value) {
-                            String name = doc.getString("name");
-                            LocalDate expiration = LocalDate.parse(doc.getString("expirationDate"));
-                            int amount = doc.getLong("amount").intValue();
-                            int imageResource = doc.getLong("imageResource").intValue();
-                            String imageUrl = doc.getString("imageUrl");
-
-                            FridgeItem item = new FridgeItem(name, expiration, amount, imageResource);
-                            item.setDocumentId(doc.getId());
-                            if (imageUrl != null) {
-                                item.setImageUrl(imageUrl);
-                            }
-                            newItems.add(item);
-                        }
-                    runOnUiThread(() -> {
-                        DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new FridgeItemDiffCallback(itemList, newItems));
-                        itemList.clear();
-                        itemList.addAll(newItems);
-                        diffResult.dispatchUpdatesTo(adapter);
-                    });
-                    checkAndSendExpiryNotifications();
+                    newItems.add(item);
+                }
+                runOnUiThread(() -> {
+                    DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new FridgeItemDiffCallback(itemList, newItems));
+                    itemList.clear();
+                    itemList.addAll(newItems);
+                    diffResult.dispatchUpdatesTo(adapter);
                 });
+            }).addOnFailureListener(e -> {
+                Toast.makeText(this, "Error loading items: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            });
+        // checkAndSendExpiryNotifications();
     }
 
     public void updateItemAmount(FridgeItem item, int newAmount) {
@@ -314,6 +389,33 @@ public class FridgeListActivity extends AppCompatActivity {
                     });
         }
     }
+
+    private void scheduleDailyAlarm() {
+        Intent intent = new Intent(this, FridgeAlarmReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+
+        // Minden nap reggel 8:00
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(System.currentTimeMillis());
+        calendar.set(Calendar.HOUR_OF_DAY, 8);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+
+        if (calendar.getTimeInMillis() < System.currentTimeMillis()) {
+            calendar.add(Calendar.DAY_OF_YEAR, 1);
+        }
+
+        alarmManager.setInexactRepeating(
+                AlarmManager.RTC_WAKEUP,
+                calendar.getTimeInMillis(),
+                AlarmManager.INTERVAL_DAY,
+                pendingIntent
+        );
+    }
+
 
 
     private void changeSpanCount(MenuItem item, int drawableId, int spanCount) {
