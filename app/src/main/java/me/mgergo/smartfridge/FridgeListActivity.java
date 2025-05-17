@@ -35,6 +35,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.time.LocalDate;
@@ -93,6 +94,8 @@ public class FridgeListActivity extends AppCompatActivity {
 
         adapter = new FridgeItemAdapter(this, itemList);
         recyclerView.setAdapter(adapter);
+        recyclerView.setItemViewCacheSize(20);
+        recyclerView.setHasFixedSize(true);
 
         // initializeData();
         loadItemsFromFirestore();
@@ -240,13 +243,13 @@ public class FridgeListActivity extends AppCompatActivity {
                 .addOnSuccessListener(documentReference -> {
                     item.setDocumentId(documentReference.getId());
                     Log.d(LOG_TAG, "Item added with ID: " + documentReference.getId());
-                    adapter.notifyItemInserted(itemList.size() - 1);
                 })
                 .addOnFailureListener(e -> Log.e(LOG_TAG, "Error adding item", e));
     }
 
     private void loadItemsFromFirestore() {
         db.collection("users").document(user.getUid()).collection("items")
+                .orderBy("expirationDate", Query.Direction.ASCENDING)
                 .addSnapshotListener((value, error) -> {
                     if (error != null) {
                         Log.w(LOG_TAG, "Firestore error", error);
@@ -254,23 +257,23 @@ public class FridgeListActivity extends AppCompatActivity {
                         return;
                     }
 
-                    runOnUiThread(() -> {
+
                         List<FridgeItem> newItems = new ArrayList<>();
                         for (QueryDocumentSnapshot doc : value) {
                             String name = doc.getString("name");
                             LocalDate expiration = LocalDate.parse(doc.getString("expirationDate"));
                             int amount = doc.getLong("amount").intValue();
                             int imageResource = doc.getLong("imageResource").intValue();
-                            String imageUri = doc.getString("imageUri");
+                            String imageUrl = doc.getString("imageUrl");
 
                             FridgeItem item = new FridgeItem(name, expiration, amount, imageResource);
                             item.setDocumentId(doc.getId());
-                            if (imageUri != null) {
-                                item.setImageUri(imageUri);
+                            if (imageUrl != null) {
+                                item.setImageUrl(imageUrl);
                             }
                             newItems.add(item);
                         }
-
+                    runOnUiThread(() -> {
                         DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new FridgeItemDiffCallback(itemList, newItems));
                         itemList.clear();
                         itemList.addAll(newItems);
@@ -300,13 +303,16 @@ public class FridgeListActivity extends AppCompatActivity {
     }
 
     public void deleteItem(FridgeItem item) {
-        db.collection("users").document(user.getUid()).collection("items")
-                .document(item.getDocumentId())
-                .delete()
-                .addOnSuccessListener(aVoid -> {
-                    itemList.remove(item);
-                    adapter.notifyDataSetChanged();
-                });
+        int position = itemList.indexOf(item);
+        if (position != -1) {
+            db.collection("users").document(user.getUid()).collection("items")
+                    .document(item.getDocumentId())
+                    .delete()
+                    .addOnSuccessListener(aVoid -> {
+                        itemList.remove(position);
+                        adapter.notifyItemRemoved(position);
+                    });
+        }
     }
 
 

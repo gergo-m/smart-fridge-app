@@ -43,13 +43,14 @@ public class FridgeItemAdapter extends RecyclerView.Adapter<FridgeItemAdapter.Vi
     @Override
     public void onBindViewHolder(@NonNull FridgeItemAdapter.ViewHolder holder, int position) {
         FridgeItem currentItem = fridgeItemsData.get(position);
-
         holder.bindTo(currentItem);
 
-        if (holder.getAdapterPosition() > lastPosition) {
+        holder.itemView.clearAnimation();
+
+        if (position > lastPosition) {
             Animation animation = AnimationUtils.loadAnimation(context, R.anim.slide_in_row);
             holder.itemView.startAnimation(animation);
-            lastPosition = holder.getAdapterPosition();
+            lastPosition = position;
         }
     }
 
@@ -155,9 +156,9 @@ public class FridgeItemAdapter extends RecyclerView.Adapter<FridgeItemAdapter.Vi
             expirationDateText.setText("Expires on: " + currentItem.getExpirationDate().toString());
             amountText.setText(String.valueOf(currentItem.getAmount()));
 
-            if (currentItem.getImageUri() != null && !currentItem.getImageUri().isEmpty()) {
+            if (currentItem.getImageUrl() != null && !currentItem.getImageUrl().isEmpty()) {
                 Glide.with(context)
-                        .load(Uri.parse(currentItem.getImageUri()))
+                        .load(Uri.parse(currentItem.getImageUrl()))
                         .into(itemImage);
             } else {
                 Glide.with(context)

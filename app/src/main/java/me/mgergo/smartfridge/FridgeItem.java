@@ -13,9 +13,8 @@ public class FridgeItem implements Serializable {
     private LocalDate expirationDate;
     private int amount;
     private int imageResource;
-
+    private String imageUrl;
     private String documentId;
-    private String imageUri;
 
     public FridgeItem() {}
 
@@ -24,7 +23,7 @@ public class FridgeItem implements Serializable {
         this.expirationDate = expirationDate;
         this.amount = amount;
         this.imageResource = imageResource;
-        this.imageUri = null;
+        this.imageUrl = null;
         this.documentId = "";
     }
 
@@ -39,13 +38,20 @@ public class FridgeItem implements Serializable {
     public int getAmount() {
         return amount;
     }
+    public void setAmount(int amount) {
+        this.amount = amount;
+    }
 
     public int getImageResource() {
         return imageResource;
     }
 
-    public void setAmount(int amount) {
-        this.amount = amount;
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     @Exclude
@@ -57,22 +63,14 @@ public class FridgeItem implements Serializable {
         this.documentId = documentId;
     }
 
-    public String getImageUri() {
-        return imageUri;
-    }
-
-    public void setImageUri(String imageUri) {
-        this.imageUri = imageUri;
-    }
-
     public Map<String, Object> toMap() {
         HashMap<String, Object> result = new HashMap<>();
         result.put("name", name);
         result.put("expirationDate", expirationDate.toString());
         result.put("amount", amount);
         result.put("imageResource", imageResource);
-        if (imageUri != null) {
-            result.put("imageUri", imageUri);
+        if (imageUrl != null) {
+            result.put("imageUrl", imageUrl);
         }
         return result;
     }

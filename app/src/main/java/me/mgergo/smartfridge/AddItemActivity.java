@@ -18,6 +18,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
 
 import com.bumptech.glide.Glide;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,11 +34,15 @@ import java.util.Date;
 
 public class AddItemActivity extends AppCompatActivity {
     private static final String LOG_TAG = AddItemActivity.class.getName();
+    private FirebaseUser user;
+    private FirebaseFirestore db;
+    private FridgeItemAdapter adapter;
+
     private EditText editTextName, editTextAmount, editTextExpiration;
     private ImageView imagePreview;
     private Uri selectedImageUri;
     private Uri photoUri;
-    private String currentPhotoPath;
+    private StorageReference storageRef;
 
     private final ActivityResultLauncher<Intent> galleryLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -70,6 +79,10 @@ public class AddItemActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_item);
+
+        storageRef = FirebaseStorage.getInstance().getReference();
+        user = FirebaseAuth.getInstance().getCurrentUser();
+        db = FirebaseFirestore.getInstance();
 
         editTextName = findViewById(R.id.editTextItemName);
         editTextAmount = findViewById(R.id.editTextItemAmount);
@@ -184,13 +197,11 @@ public class AddItemActivity extends AppCompatActivity {
 
             FridgeItem newItem = new FridgeItem(name, expiration, amount, R.drawable.apple);
             if (selectedImageUri != null) {
-                newItem.setImageUri(selectedImageUri.toString());
+                uploadImageToFirebase(newItem);
+            } else {
+                saveItemToFirestore(newItem);
+                finish();
             }
-
-            Intent resultIntent = new Intent();
-            resultIntent.putExtra("newItem", newItem);
-            setResult(RESULT_OK, resultIntent);
-            finish();
         } catch (DateTimeParseException ex) {
             Toast.makeText(this, "Invalid date format!", Toast.LENGTH_SHORT).show();
         } catch (Exception ex) {
@@ -198,4 +209,35 @@ public class AddItemActivity extends AppCompatActivity {
             Log.e(LOG_TAG, "Error saving item", ex);
         }
     }
+
+    private void uploadImageToFirebase(FridgeItem item) {
+        if (selectedImageUri != null) {
+            String imageName = "image_" + item.getName().toLowerCase().replace(" ", "-") + "_" + System.currentTimeMillis() + ".jpg";
+            StorageReference imageRef = storageRef.child("users/" + user.getUid() + "/images/" + imageName);
+
+            imageRef.putFile(selectedImageUri)
+                    .addOnSuccessListener(taskSnapshot -> {
+                        imageRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                            item.setImageUrl(uri.toString());
+                            saveItemToFirestore(item);
+                            finish();
+                        });
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(this, "Image upload failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    });
+        }
+    }
+
+    private void saveItemToFirestore(FridgeItem item) {
+        db.collection("users").document(user.getUid()).collection("items")
+                .add(item.toMap())
+                .addOnSuccessListener(documentReference -> {
+                    Log.d(LOG_TAG, "Item saved: " + documentReference.getId());
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Error saving item: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+    }
+
 }

@@ -31,6 +31,13 @@ public class FridgeItemDiffCallback extends DiffUtil.Callback {
 
     @Override
     public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
-        return oldList.get(oldItemPosition).equals(newList.get(newItemPosition));
+        FridgeItem oldItem = oldList.get(oldItemPosition);
+        FridgeItem newItem = newList.get(newItemPosition);
+
+        return oldItem.getName().equals(newItem.getName())
+                && oldItem.getExpirationDate().equals(newItem.getExpirationDate())
+                && oldItem.getAmount() == newItem.getAmount()
+                && oldItem.getImageUrl().equals(newItem.getImageUrl());
     }
+
 }
