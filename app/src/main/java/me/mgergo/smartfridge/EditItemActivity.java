@@ -187,7 +187,6 @@ public class EditItemActivity extends AppCompatActivity {
     private void loadImage(Uri imageUri) {
         Glide.with(this)
                 .load(imageUri)
-                .override(800, 800)
                 .centerCrop()
                 .into(imagePreview);
     }
