@@ -104,7 +104,7 @@ public class AddItemActivity extends AppCompatActivity {
         imagePreview = findViewById(R.id.imagePreview);
         progressBar = findViewById(R.id.progressBar);
 
-        findViewById(R.id.buttonGallery).setOnClickListener(v -> ImageUtils.openGallery(this, galleryLauncher));
+        // findViewById(R.id.buttonGallery).setOnClickListener(v -> ImageUtils.openGallery(this, galleryLauncher));
         findViewById(R.id.buttonSaveItem).setOnClickListener(v -> saveItem());
         setupDatePicker();
 
@@ -139,11 +139,11 @@ public class AddItemActivity extends AppCompatActivity {
     }
 
     private void setupButtons() {
-        Button btnGallery = findViewById(R.id.buttonGallery);
+        // Button btnGallery = findViewById(R.id.buttonGallery);
         Button btnCamera = findViewById(R.id.buttonCamera);
         Button btnSave = findViewById(R.id.buttonSaveItem);
 
-        btnGallery.setOnClickListener(v -> ImageUtils.openGallery(this, galleryLauncher));
+        // btnGallery.setOnClickListener(v -> ImageUtils.openGallery(this, galleryLauncher));
         btnCamera.setOnClickListener(v -> {
             try {
                 File photoFile = createImageFile();

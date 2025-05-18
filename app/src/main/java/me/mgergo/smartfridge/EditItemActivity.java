@@ -110,7 +110,7 @@ public class EditItemActivity extends AppCompatActivity {
                     .into(imagePreview);
         }
 
-        findViewById(R.id.buttonGallery).setOnClickListener(v -> ImageUtils.openGallery(this, galleryLauncher));
+        // findViewById(R.id.buttonGallery).setOnClickListener(v -> ImageUtils.openGallery(this, galleryLauncher));
         findViewById(R.id.buttonCamera).setOnClickListener(v -> {
             try {
                 File photoFile = createImageFile(this);
