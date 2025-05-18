@@ -27,12 +27,6 @@
         app:showAsAction="ifRoom|withText" />
 
     <item
-        android:id="@+id/settingsBtn"
-        android:title="@string/settings"
-        app:showAsAction="never"
-        android:orderInCategory="1" />
-
-    <item
         android:id="@+id/logoutBtn"
         android:title="@string/log_out"
         app:showAsAction="never"

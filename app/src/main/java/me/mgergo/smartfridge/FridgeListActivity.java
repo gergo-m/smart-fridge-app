@@ -257,11 +257,18 @@ public class FridgeListActivity extends AppCompatActivity {
             String msg = filterSoon ? "Showing soon-to-expire items" : "Showing all items";
             Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
             return true;
-        } else if (itemId == R.id.settingsBtn) {
+        } else if (itemId == R.id.addItem) {
+            if (user != null) {
+                startActivityForResult(new Intent(this, AddItemActivity.class), 1);
+            } else {
+                Toast.makeText(this, "Please log in first!", Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        } /* else if (itemId == R.id.settingsBtn) {
             // Intent settingsIntent = new Intent(this, SettingsActivity.class);
             // startActivity(settingsIntent);
             return true;
-        } else if (itemId == R.id.logoutBtn) {
+        }*/ else if (itemId == R.id.logoutBtn) {
             FirebaseAuth.getInstance().signOut();
             finish();
             return true;

@@ -33,7 +33,6 @@ public class RegisterActivity extends AppCompatActivity implements AdapterView.O
     EditText emailET;
     EditText passwordET;
     EditText passwordConfirmET;
-    Spinner regionSpinner;
 
     private SharedPreferences preferences;
     private FirebaseAuth firebaseAuth;
@@ -59,7 +58,6 @@ public class RegisterActivity extends AppCompatActivity implements AdapterView.O
         emailET = findViewById(R.id.editTextRegisterEmail);
         passwordET = findViewById(R.id.editTextRegisterPassword);
         passwordConfirmET = findViewById(R.id.editTextRegisterPasswordConfirm);
-        regionSpinner = findViewById(R.id.spinnerRegisterRegion);
 
         preferences = getSharedPreferences(PREF_KEY, MODE_PRIVATE);
         String username = preferences.getString("username", "");
@@ -67,12 +65,6 @@ public class RegisterActivity extends AppCompatActivity implements AdapterView.O
 
         emailET.setText(username);
         passwordET.setText(password);
-
-        regionSpinner.setOnItemSelectedListener(this);
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
-                R.array.regions, android.R.layout.simple_spinner_item);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        regionSpinner.setAdapter(adapter);
 
         firebaseAuth = FirebaseAuth.getInstance();
     }
@@ -97,8 +89,6 @@ public class RegisterActivity extends AppCompatActivity implements AdapterView.O
             Toast.makeText(this, "Passwords do not match!", Toast.LENGTH_SHORT).show();
             return;
         }
-
-        String region = regionSpinner.getSelectedItem().toString();
 
         Log.i(LOG_TAG, "User registered: " + username + ", email: " + email);
 
